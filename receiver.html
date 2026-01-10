@@ -5,8 +5,11 @@
 <title>FoodLink — Receiver</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- LEAFLET -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <style>
-/* ================= RESET ================= */
 * {
   margin: 0;
   padding: 0;
@@ -14,13 +17,12 @@
 }
 
 body {
-  font-family: "Inter", "Segoe UI", sans-serif;
+  font-family: Inter, sans-serif;
   background: radial-gradient(circle at top right, #0f2a44, #050b14);
   color: #e5e7eb;
-  line-height: 1.6;
 }
 
-/* ================= NAVBAR ================= */
+/* NAVBAR */
 nav {
   position: fixed;
   top: 20px;
@@ -28,7 +30,7 @@ nav {
   transform: translateX(-50%);
   width: 90%;
   max-width: 1200px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255,255,255,0.08);
   backdrop-filter: blur(14px);
   border-radius: 18px;
   padding: 14px 28px;
@@ -39,49 +41,10 @@ nav {
 }
 
 .logo {
+  font-size: 2em;
+  color: #22c55e;
   background: transparent;
   border: none;
-  --border-right: 6px;
-  --text-stroke-color: rgba(201, 187, 187, 0.6);
-  --animation-color: #22c55e;
-  --fs-size: 2em;
-  letter-spacing: 3px;
-  font-size: var(--fs-size);
-  position: relative;
-  text-transform: uppercase;
-  color: transparent;
-  -webkit-text-stroke: 1px var(--text-stroke-color);
-}
-
-.hover-text {
-  position: absolute;
-  inset: 0;
-  color: var(--animation-color);
-  width: 0%;
-  border-right: var(--border-right) solid var(--animation-color);
-  overflow: hidden;
-  transition: 0.5s;
-  -webkit-text-stroke: 1px var(--animation-color);
-}
-
-.logo:hover .hover-text {
-  width: 100%;
-  filter: drop-shadow(0 0 23px var(--animation-color));
-}
-
-nav ul {
-  list-style: none;
-  display: flex;
-  gap: 24px;
-}
-
-nav ul li {
-  font-size: 14px;
-  opacity: 0.85;
-}
-
-nav ul li:hover {
-  opacity: 1;
 }
 
 .nav-btn {
@@ -93,84 +56,37 @@ nav ul li:hover {
   cursor: pointer;
 }
 
-/* ================= PAGE CONTAINER ================= */
+/* MAIN */
 .main-container {
-  padding: 160px 8% 100px;
+  padding: 160px 8% 80px;
   max-width: 1400px;
   margin: auto;
 }
 
-/* ================= DASHBOARD BAR (RECEIVER) ================= */
+/* DASHBOARD */
 .dashboard-bar {
-  width: 100%;
   background: linear-gradient(135deg, rgba(34,197,94,0.35), rgba(59,130,246,0.25));
   border-radius: 20px;
   padding: 26px 32px;
+  margin-bottom: 50px;
   box-shadow: 0 0 80px rgba(34,197,94,0.25);
-  margin-bottom: 60px;
 }
 
-.dashboard-text h1 {
-  font-size: 34px;
-  font-weight: 500;
-  
-}
-
-.dashboard-text p {
-  color: #cbd5e1;
-  font-size: 15px;
-}
-
-
-/* ================= LISTINGS GRID ================= */
+/* LISTINGS */
 .listings-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 32px;
 }
 
-/* ================= LISTING CARD ================= */
 .listing-card {
   background: rgba(255,255,255,0.06);
   border-radius: 22px;
-  backdrop-filter: blur(10px);
-  overflow: hidden;
-  transition: transform 0.3s ease;
-}
-
-.listing-card:hover {
-  transform: translateY(-6px);
-}
-
-.listing-card img {
-  width: 100%;
-  height: 190px;
-  object-fit: cover;
-}
-
-.card-content {
   padding: 24px;
 }
 
-.card-content h3 {
-  font-size: 20px;
-  margin-bottom: 8px;
-}
-
-.card-content p {
-  font-size: 14px;
-  color: #cbd5e1;
-  margin-bottom: 6px;
-}
-
-.card-location {
-  margin-top: 10px;
-  font-size: 13px;
-  opacity: 0.85;
-}
-
 .locate-btn {
-  margin-top: 18px;
+  margin-top: 14px;
   width: 100%;
   padding: 12px;
   border-radius: 12px;
@@ -186,13 +102,20 @@ nav ul li:hover {
   color: #04110a;
 }
 
-/* ================= RESPONSIVE ================= */
-@media (max-width: 900px) {
-  .dashboard-bar {
-    flex-direction: column;
-    gap: 10px;
-    text-align: center;
-  }
+/* MAP */
+#map-section {
+  padding: 80px 8%;
+}
+
+#map {
+  height: 420px;
+  border-radius: 18px;
+  box-shadow: 0 0 40px rgba(34,197,94,0.25);
+}
+
+#routeInfo {
+  margin-top: 15px;
+  font-weight: bold;
 }
 </style>
 </head>
@@ -201,61 +124,112 @@ nav ul li:hover {
 
 <!-- NAVBAR -->
 <nav>
-  <button class="logo">
-    <span class="actual-text">&nbsp;FOODLINK&nbsp;</span>
-    <span class="hover-text">&nbsp;FOODLINK&nbsp;</span>
-  </button>
-  <ul>
+  <button class="logo">FOODLINK</button>
+  <div>
     <button class="nav-btn" onclick="location.href='index.html'">Home</button>
     <button class="nav-btn" onclick="location.href='provider.html'">Provider</button>
     <button class="nav-btn" onclick="location.href='receiver.html'">Receiver</button>
-  </ul>
-  <button class="nav-btn" onclick="location.href='login.html'">Login</button> 
+  </div>
 </nav>
 
 <!-- MAIN -->
 <div class="main-container">
 
-  <!-- DASHBOARD BAR -->
   <div class="dashboard-bar">
     <h1>Receiver Dashboard</h1>
-    <p>Browse available food listings and connect with providers nearby</p>
+    <p>Browse available food listings near you</p>
   </div>
 
-  <!-- LISTINGS -->
-  <div class="listings-grid">
-
-    <div class="listing-card">
-      <img src="https://images.unsplash.com/photo-1542838132-92c53300491e">
-      <div class="card-content">
-        <h3>Fresh Vegetables</h3>
-        <p>Quantity: 30 kg</p>
-        <p>Expiry: Today, 8 PM</p>
-        <div class="card-location">📍 Sharjah</div>
-        <button class="locate-btn">Locate Now</button>
-        <button class="locate-btn" onclick="window.location.href='mailto:provider@example.com'">
-  Contact Now
-</button>
-      </div>
-    </div>
-
-    <div class="listing-card">
-      <img src="https://images.unsplash.com/photo-1604908177522-4291bcd34c56">
-      <div class="card-content">
-        <h3>Cooked Meals</h3>
-        <p>Quantity: 20 meals</p>
-        <p>Expiry: Today, 7 PM</p>
-        <div class="card-location">📍 Dubai</div>
-        <button class="locate-btn">Locate Now</button>
-        <button class="locate-btn" onclick="window.location.href='mailto:provider@example.com'">
-  Contact Now
-</button>
-      </div>
-    </div>
-
-  </div>
+  <!-- DYNAMIC LISTINGS -->
+  <div class="listings-grid" id="listings"></div>
 
 </div>
+
+<!-- MAP SECTION -->
+<section id="map-section">
+  <h2>📍 Choose Your Location</h2>
+  <p>Click on the map to calculate distance & time</p>
+  <div id="map"></div>
+  <p id="routeInfo"></p>
+</section>
+
+<script>
+/* MAP INIT */
+let map = L.map('map').setView([25.2048, 55.2708], 10);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap'
+}).addTo(map);
+
+let providerMarker, userMarker, routeLine;
+
+/* LOAD PROVIDERS FROM LOCALSTORAGE */
+const listings = JSON.parse(localStorage.getItem("foodListings")) || [];
+const container = document.getElementById("listings");
+
+if (listings.length === 0) {
+  container.innerHTML = "<p>No listings available yet.</p>";
+}
+
+listings.forEach(item => {
+  container.innerHTML += `
+    <div class="listing-card">
+      <h3>${item.foodType}</h3>
+      <p>Quantity: ${item.quantity}</p>
+      <button class="locate-btn"
+        onclick="locateProvider(${item.lat}, ${item.lng})">
+        Locate Now
+      </button>
+    </div>
+  `;
+});
+
+/* LOCATE PROVIDER */
+function locateProvider(lat, lng) {
+  document.getElementById('map-section')
+    .scrollIntoView({ behavior: 'smooth' });
+
+  if (providerMarker) map.removeLayer(providerMarker);
+  if (routeLine) map.removeLayer(routeLine);
+
+  providerMarker = L.marker([lat, lng])
+    .addTo(map)
+    .bindPopup("Provider Location")
+    .openPopup();
+
+  map.setView([lat, lng], 13);
+}
+
+/* USER LOCATION CLICK */
+map.on('click', function(e) {
+  if (!providerMarker) {
+    alert("Click 'Locate Now' first");
+    return;
+  }
+
+  if (userMarker) map.removeLayer(userMarker);
+  if (routeLine) map.removeLayer(routeLine);
+
+  userMarker = L.marker(e.latlng)
+    .addTo(map)
+    .bindPopup("Your Location")
+    .openPopup();
+
+  routeLine = L.polyline(
+    [providerMarker.getLatLng(), e.latlng],
+    { dashArray: '6,6' }
+  ).addTo(map);
+
+  const distance =
+    providerMarker.getLatLng().distanceTo(e.latlng) / 1000;
+
+  const time = (distance / 40) * 60;
+
+  document.getElementById('routeInfo').innerHTML =
+    `🚗 Distance: ${distance.toFixed(2)} km |
+     ⏱ Estimated Time: ${time.toFixed(0)} mins`;
+});
+</script>
 
 </body>
 </html>
