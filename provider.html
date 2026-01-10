@@ -20,7 +20,34 @@ nav { position:fixed; top:20px; left:50%; transform:translateX(-50%); width:90%;
 .add-listing-bar h1 { font-size:34px; font-weight:600; }
 .add-listing-bar p { color:#cbd5e1; font-size:15px; }
 .add-btn { padding:14px 30px; font-size:15px; border-radius:14px; border:none; cursor:pointer; background:linear-gradient(135deg, #22c55e, #16a34a); color:#04110a; font-weight:600; }
-.listings-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap:32px; max-height:1000px; overflow-y:auto; padding-right:8px; } 
+.listings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
+  gap: 32px;
+  max-height: 1000px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Sleek dark green scrollbar */
+.listings-grid::-webkit-scrollbar {
+  width: 8px; /* thin scrollbar */
+}
+
+.listings-grid::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.1); /* dark transparent background */
+  border-radius: 4px;
+}
+
+.listings-grid::-webkit-scrollbar-thumb {
+  background: rgba(34,197,94,0.6); /* green thumb */
+  border-radius: 4px;
+  transition: background 0.3s;
+}
+
+.listings-grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(34,197,94,0.9); /* brighter green on hover */
+}
 .listing-card { background: rgba(255,255,255,0.06); border-radius:22px; backdrop-filter: blur(10px); overflow:hidden; transition:transform 0.3s ease; }
 .listing-card:hover { transform:translateY(-6px); }
 .listing-card img { width:100%; height:190px; object-fit:cover; }
@@ -234,6 +261,7 @@ function locateProvider(lat,lng){
 
 </body>
 </html>
+
 
 
 
