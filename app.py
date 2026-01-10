@@ -1,3 +1,4 @@
+# backend/app.py
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import os
@@ -31,30 +32,9 @@ def allowed_file(filename):
 
 # Initialize database
 db.init_app(app)
-init_db(app)
 
-# Simple AI Classifier
-class FoodSafetyAI:
-    def classify(self, food_name, expiry_date_str, description=""):
-        """Simple AI food safety classifier"""
-        try:
-            expiry_date = datetime.strptime(expiry_date_str, '%Y-%m-%d').date()
-            days_left = (expiry_date - datetime.now().date()).days
-            
-            if days_left < 0:
-                return {'status': 'reject', 'confidence': 0.95, 'reason': 'Food is expired'}
-            elif days_left <= 2:
-                return {'status': 'consume_soon', 'confidence': 0.85, 'reason': f'Best consumed within {days_left} days'}
-            elif days_left <= 7:
-                return {'status': 'safe', 'confidence': 0.75, 'reason': 'Good for donation, use soon'}
-            else:
-                return {'status': 'safe', 'confidence': 0.95, 'reason': 'Excellent for donation'}
-        except:
-            return {'status': 'safe', 'confidence': 0.5, 'reason': 'Default classification'}
+# ========== API ROUTES ==========
 
-ai = FoodSafetyAI()
-
-# API Routes
 @app.route('/')
 def home():
     return jsonify({
@@ -115,14 +95,7 @@ def create_donation():
             if field not in data:
                 return jsonify({"error": f"Missing required field: {field}"}), 400
         
-        # AI classification
-        ai_result = ai.classify(
-            data['food_name'],
-            data['expiry_date'],
-            data.get('description', '')
-        )
-        
-        # Create donation
+        # Create donation (AI will be set automatically in __init__)
         donation = FoodListing(
             donor_name=data['donor_name'],
             donor_contact=data.get('donor_contact', ''),
@@ -136,11 +109,9 @@ def create_donation():
             location_lng=data.get('lng'),
             address=data.get('address', ''),
             image_url=data.get('image_url', ''),
-            ai_status=ai_result['status'],
-            ai_confidence=ai_result['confidence'],
-            ai_reason=ai_result['reason'],
             storage_condition=data.get('storage_condition', ''),
-            packaging=data.get('packaging', '')
+            packaging=data.get('packaging', ''),
+            status='available'
         )
         
         db.session.add(donation)
@@ -150,7 +121,11 @@ def create_donation():
             "success": True,
             "message": "Donation created successfully",
             "donation_id": donation.id,
-            "ai_result": ai_result
+            "ai_result": {
+                "status": donation.ai_status,
+                "reason": donation.ai_reason,
+                "confidence": donation.ai_confidence
+            }
         }), 201
         
     except Exception as e:
@@ -220,7 +195,7 @@ def get_stats():
             "delivered_donations": FoodListing.query.filter_by(status='delivered').count(),
             "organizations_count": Organization.query.filter_by(is_active=True).count(),
             "donations_with_images": FoodListing.query.filter(FoodListing.image_url != '').count(),
-            "ai_safe": FoodListing.query.filter_by(ai_status='safe').count(),
+            "ai_safe": FoodListing.query.filter_by(ai_status='safe_to_donate').count(),
             "ai_consume_soon": FoodListing.query.filter_by(ai_status='consume_soon').count(),
             "ai_reject": FoodListing.query.filter_by(ai_status='reject').count()
         }
@@ -228,19 +203,26 @@ def get_stats():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/ai/classify', methods=['POST'])
-def classify_food():
-    """AI food safety classification"""
+@app.route('/api/donations/<int:donation_id>/claim', methods=['POST'])
+def claim_donation(donation_id):
+    """Claim a food donation"""
     try:
-        data = request.json
-        result = ai.classify(
-            data['food_name'],
-            data['expiry_date'],
-            data.get('description', '')
-        )
-        return jsonify(result)
+        donation = FoodListing.query.get(donation_id)
+        if not donation:
+            return jsonify({"error": "Donation not found"}), 404
+        
+        if donation.status != 'available':
+            return jsonify({"error": f"Donation is already {donation.status}"}), 400
+        
+        donation.status = 'claimed'
+        db.session.commit()
+        
+        return jsonify({
+            "success": True,
+            "message": "Donation claimed successfully"
+        })
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error": str(e)}), 500
 
 # Serve static files
 @app.route('/static/<path:filename>')
@@ -260,192 +242,326 @@ def provider_dashboard():
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
             body {
-                font-family: Arial, sans-serif;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                 margin: 0;
                 padding: 20px;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
                 min-height: 100vh;
             }
             
             .container {
-                max-width: 1200px;
+                max-width: 1400px;
                 margin: 0 auto;
                 background: white;
-                border-radius: 15px;
+                border-radius: 20px;
                 padding: 30px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                box-shadow: 0 20px 60px rgba(0,0,0,0.1);
             }
             
             header {
                 text-align: center;
                 margin-bottom: 40px;
+                padding-bottom: 20px;
+                border-bottom: 2px solid #eaeaea;
             }
             
             h1 {
-                color: #333;
+                color: #2c3e50;
                 margin-bottom: 10px;
+                font-size: 2.5em;
             }
             
-            .stats {
+            .tagline {
+                color: #7f8c8d;
+                font-size: 1.2em;
+            }
+            
+            .stats-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
                 gap: 20px;
-                margin-bottom: 30px;
+                margin-bottom: 40px;
             }
             
             .stat-card {
-                background: #f8f9fa;
-                padding: 20px;
-                border-radius: 10px;
+                background: white;
+                padding: 25px;
+                border-radius: 15px;
                 text-align: center;
-                border-left: 5px solid #667eea;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+                border-top: 5px solid #3498db;
+                transition: transform 0.3s ease;
+            }
+            
+            .stat-card:hover {
+                transform: translateY(-5px);
             }
             
             .stat-value {
-                font-size: 32px;
+                font-size: 36px;
                 font-weight: bold;
-                color: #333;
+                color: #2c3e50;
+                margin-bottom: 10px;
             }
             
             .stat-label {
-                color: #666;
-                margin-top: 5px;
+                color: #7f8c8d;
+                font-size: 14px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            
+            .section {
+                margin-bottom: 40px;
             }
             
             .section-title {
-                color: #444;
-                border-bottom: 2px solid #eee;
-                padding-bottom: 10px;
+                color: #2c3e50;
+                border-left: 5px solid #3498db;
+                padding-left: 15px;
+                margin-bottom: 25px;
+                font-size: 1.5em;
+            }
+            
+            .upload-box {
+                background: #f8f9fa;
+                padding: 30px;
+                border-radius: 15px;
+                border: 2px dashed #bdc3c7;
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            
+            .upload-box h3 {
+                color: #2c3e50;
                 margin-bottom: 20px;
+            }
+            
+            .form-group {
+                margin-bottom: 20px;
+                text-align: left;
+            }
+            
+            label {
+                display: block;
+                margin-bottom: 8px;
+                color: #2c3e50;
+                font-weight: 500;
+            }
+            
+            input, select {
+                width: 100%;
+                padding: 12px;
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                font-size: 16px;
+                transition: border-color 0.3s;
+                box-sizing: border-box;
+            }
+            
+            input:focus, select:focus {
+                outline: none;
+                border-color: #3498db;
+            }
+            
+            .file-input {
+                padding: 10px;
+                border: 2px dashed #3498db;
+                background: #f0f8ff;
+                cursor: pointer;
+            }
+            
+            .btn {
+                background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+                color: white;
+                border: none;
+                padding: 15px 30px;
+                border-radius: 8px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                margin: 5px;
+            }
+            
+            .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+            }
+            
+            .btn-success {
+                background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            }
+            
+            .btn-warning {
+                background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
             }
             
             .food-grid {
                 display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-                gap: 25px;
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                gap: 30px;
             }
             
             .food-card {
                 background: white;
-                border-radius: 12px;
+                border-radius: 15px;
                 overflow: hidden;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
-                border: 1px solid #eee;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+                transition: all 0.3s ease;
+                border: 1px solid #f0f0f0;
             }
             
             .food-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+                transform: translateY(-10px);
+                box-shadow: 0 20px 40px rgba(0,0,0,0.12);
             }
             
             .food-image {
                 width: 100%;
-                height: 200px;
+                height: 220px;
                 object-fit: cover;
+                transition: transform 0.5s ease;
+            }
+            
+            .food-card:hover .food-image {
+                transform: scale(1.05);
             }
             
             .no-image {
                 width: 100%;
-                height: 200px;
-                background: linear-gradient(45deg, #667eea, #764ba2);
+                height: 220px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 display: flex;
+                flex-direction: column;
                 align-items: center;
                 justify-content: center;
                 color: white;
                 font-size: 18px;
             }
             
+            .no-image i {
+                font-size: 48px;
+                margin-bottom: 10px;
+            }
+            
             .food-info {
-                padding: 20px;
+                padding: 25px;
             }
             
             .food-name {
-                font-size: 20px;
-                font-weight: bold;
+                font-size: 1.4em;
+                font-weight: 600;
+                color: #2c3e50;
                 margin: 0 0 10px 0;
-                color: #333;
             }
             
-            .food-detail {
-                margin: 8px 0;
-                color: #666;
-                font-size: 14px;
+            .food-description {
+                color: #7f8c8d;
+                margin-bottom: 15px;
+                line-height: 1.5;
             }
             
-            .ai-status {
+            .food-details {
+                margin: 15px 0;
+            }
+            
+            .detail-item {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 8px;
+                color: #555;
+            }
+            
+            .detail-label {
+                font-weight: 500;
+                color: #7f8c8d;
+            }
+            
+            .ai-badge {
                 display: inline-block;
-                padding: 5px 15px;
+                padding: 6px 15px;
                 border-radius: 20px;
                 font-size: 12px;
                 font-weight: bold;
                 margin-top: 10px;
             }
             
-            .safe { background: #d4edda; color: #155724; }
-            .consume_soon { background: #fff3cd; color: #856404; }
-            .reject { background: #f8d7da; color: #721c24; }
-            
-            .upload-section {
-                background: #f8f9fa;
-                padding: 25px;
-                border-radius: 12px;
-                margin-bottom: 30px;
-                border: 2px dashed #ddd;
-            }
-            
-            input, button {
-                padding: 12px;
-                margin: 8px 0;
-                border: 1px solid #ddd;
-                border-radius: 8px;
-                font-size: 16px;
-            }
-            
-            button {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                border: none;
-                cursor: pointer;
-                transition: opacity 0.3s;
-            }
-            
-            button:hover {
-                opacity: 0.9;
-            }
+            .ai-safe { background: #d5f4e6; color: #27ae60; }
+            .ai-soon { background: #fef9e7; color: #f39c12; }
+            .ai-reject { background: #fdeaea; color: #e74c3c; }
             
             .message {
-                padding: 10px;
-                border-radius: 8px;
-                margin-top: 10px;
+                padding: 15px;
+                border-radius: 10px;
+                margin: 15px 0;
                 text-align: center;
+                font-weight: 500;
             }
             
-            .success { background: #d4edda; color: #155724; }
-            .error { background: #f8d7da; color: #721c24; }
-            .loading { background: #d1ecf1; color: #0c5460; }
+            .success { background: #d5f4e6; color: #27ae60; border-left: 4px solid #27ae60; }
+            .error { background: #fdeaea; color: #e74c3c; border-left: 4px solid #e74c3c; }
+            .loading { background: #e3f2fd; color: #1976d2; border-left: 4px solid #1976d2; }
             
-            .refresh-btn {
-                background: #28a745;
-                float: right;
+            .loading-spinner {
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid #3498db;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                animation: spin 1s linear infinite;
+                margin: 20px auto;
             }
+            
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            
+            .actions {
+                display: flex;
+                gap: 10px;
+                margin-top: 20px;
+            }
+            
+            .btn-small {
+                padding: 8px 15px;
+                font-size: 14px;
+                flex: 1;
+            }
+            
+            .status-badge {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                padding: 5px 15px;
+                border-radius: 15px;
+                font-size: 12px;
+                font-weight: bold;
+                color: white;
+            }
+            
+            .status-available { background: #27ae60; }
+            .status-claimed { background: #f39c12; }
+            .status-expired { background: #e74c3c; }
         </style>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     </head>
     <body>
         <div class="container">
             <header>
-                <h1>🥗 Food Provider Dashboard</h1>
-                <p>Manage your food donations and images</p>
+                <h1><i class="fas fa-utensils"></i> Food Provider Dashboard</h1>
+                <p class="tagline">Manage your food donations and reduce waste</p>
             </header>
             
-            <div class="stats" id="stats-container">
+            <div class="stats-grid" id="stats-container">
                 <div class="stat-card">
                     <div class="stat-value" id="total-donations">0</div>
                     <div class="stat-label">Total Donations</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value" id="available-donations">0</div>
-                    <div class="stat-label">Available</div>
+                    <div class="stat-label">Available Now</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-value" id="donations-with-images">0</div>
@@ -453,38 +569,101 @@ def provider_dashboard():
                 </div>
                 <div class="stat-card">
                     <div class="stat-value" id="ai-safe">0</div>
-                    <div class="stat-label">AI Safe</div>
+                    <div class="stat-label">AI Approved</div>
                 </div>
             </div>
             
-            <div class="upload-section">
-                <h2 class="section-title">📤 Upload Food Image</h2>
-                <input type="number" id="donationId" placeholder="Enter Donation ID" style="width: 200px;">
-                <input type="file" id="imageInput" accept="image/*">
-                <button onclick="uploadImage()">Upload Image</button>
-                <div id="uploadMessage" class="message"></div>
+            <div class="section">
+                <h2 class="section-title"><i class="fas fa-cloud-upload-alt"></i> Upload New Donation</h2>
+                <div class="upload-box">
+                    <form id="donationForm">
+                        <div class="form-group">
+                            <label for="foodName"><i class="fas fa-apple-alt"></i> Food Name *</label>
+                            <input type="text" id="foodName" placeholder="e.g., Fresh Apples, Bread Loaves" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="description"><i class="fas fa-align-left"></i> Description</label>
+                            <input type="text" id="description" placeholder="Brief description of the food">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="quantity"><i class="fas fa-balance-scale"></i> Quantity</label>
+                            <input type="number" id="quantity" value="1" min="1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="expiryDate"><i class="fas fa-calendar-alt"></i> Expiry Date *</label>
+                            <input type="date" id="expiryDate" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="imageUpload"><i class="fas fa-camera"></i> Food Image</label>
+                            <input type="file" id="imageUpload" class="file-input" accept="image/*">
+                        </div>
+                        
+                        <button type="button" onclick="createDonation()" class="btn btn-success">
+                            <i class="fas fa-plus-circle"></i> Create Donation
+                        </button>
+                    </form>
+                </div>
+                <div id="createMessage"></div>
             </div>
             
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2 class="section-title">🍎 Available Food Donations</h2>
-                <button onclick="loadDonations()" class="refresh-btn">🔄 Refresh List</button>
-            </div>
-            
-            <div id="donations-container" class="food-grid">
-                <!-- Donations will load here -->
+            <div class="section">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 class="section-title"><i class="fas fa-list"></i> Available Donations</h2>
+                    <div>
+                        <button onclick="loadDonations()" class="btn">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <button onclick="uploadImageToExisting()" class="btn btn-warning">
+                            <i class="fas fa-image"></i> Add Image to Existing
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="uploadExistingSection" style="display: none; margin-bottom: 20px;">
+                    <div class="upload-box">
+                        <h3><i class="fas fa-upload"></i> Add Image to Existing Donation</h3>
+                        <input type="number" id="existingDonationId" placeholder="Enter Donation ID" style="width: 200px; margin-right: 10px;">
+                        <input type="file" id="existingImageUpload" accept="image/*" style="display: inline-block;">
+                        <button onclick="uploadToExisting()" class="btn">Upload</button>
+                        <button onclick="hideUploadSection()" class="btn" style="background: #95a5a6;">Cancel</button>
+                        <div id="existingUploadMessage" style="margin-top: 10px;"></div>
+                    </div>
+                </div>
+                
+                <div id="donations-container">
+                    <!-- Donations will load here -->
+                </div>
             </div>
         </div>
 
         <script>
             const API_BASE = 'http://localhost:5000/api';
             
+            // Format date for input field
+            function formatDateForInput(date) {
+                const d = new Date(date);
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate() + 2).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+            
+            // Set default expiry date (tomorrow)
+            document.addEventListener('DOMContentLoaded', function() {
+                document.getElementById('expiryDate').value = formatDateForInput(new Date());
+                loadStats();
+                loadDonations();
+            });
+            
             // Load statistics
             async function loadStats() {
                 try {
                     const response = await fetch(`${API_BASE}/stats`);
                     const stats = await response.json();
-                    
-                    if (!response.ok) throw new Error(stats.error);
                     
                     document.getElementById('total-donations').textContent = stats.total_donations || 0;
                     document.getElementById('available-donations').textContent = stats.available_donations || 0;
@@ -499,7 +678,7 @@ def provider_dashboard():
             async function loadDonations() {
                 try {
                     const container = document.getElementById('donations-container');
-                    container.innerHTML = '<div class="loading message">Loading donations...</div>';
+                    container.innerHTML = '<div class="loading-spinner"></div><div class="loading">Loading donations...</div>';
                     
                     const response = await fetch(`${API_BASE}/donations/images`);
                     const data = await response.json();
@@ -511,7 +690,7 @@ def provider_dashboard():
                 } catch (error) {
                     console.error('Error:', error);
                     document.getElementById('donations-container').innerHTML = 
-                        '<div class="error message">Error loading donations. Check if backend is running.</div>';
+                        '<div class="error">Error loading donations. Make sure backend is running on port 5000.</div>';
                 }
             }
             
@@ -519,56 +698,205 @@ def provider_dashboard():
                 const container = document.getElementById('donations-container');
                 
                 if (!donations || donations.length === 0) {
-                    container.innerHTML = '<div class="message">No food donations available.</div>';
+                    container.innerHTML = '<div class="message">No food donations available yet. Create your first donation!</div>';
                     return;
                 }
                 
-                container.innerHTML = donations.map(donation => `
-                    <div class="food-card">
-                        ${donation.image_url 
-                            ? `<img src="${donation.image_url}" alt="${donation.food_name}" class="food-image">`
-                            : `<div class="no-image">📷 No Image</div>`
-                        }
-                        <div class="food-info">
-                            <h3 class="food-name">${donation.food_name}</h3>
-                            <p class="food-detail">📍 ${donation.location?.address || donation.donor_name || 'Location not set'}</p>
-                            <p class="food-detail">📅 Expires: ${donation.expiry_date || 'Unknown'}</p>
-                            <p class="food-detail">📦 Quantity: ${donation.quantity} ${donation.unit}</p>
-                            <p class="food-detail">👤 Donor: ${donation.donor_name || 'Anonymous'}</p>
-                            
-                            <div class="ai-status ${donation.ai_classification?.status || 'safe'}">
-                                AI: ${(donation.ai_classification?.status || 'safe').toUpperCase()}
+                container.innerHTML = donations.map(donation => {
+                    const aiClass = donation.ai_classification?.status || 'safe_to_donate';
+                    const aiStatus = aiClass === 'safe_to_donate' ? 'safe' : 
+                                     aiClass === 'consume_soon' ? 'soon' : 'reject';
+                    
+                    return `
+                        <div class="food-card">
+                            <div style="position: relative;">
+                                ${donation.image_url 
+                                    ? `<img src="${donation.image_url}" alt="${donation.food_name}" class="food-image">`
+                                    : `<div class="no-image">
+                                        <i class="fas fa-camera"></i>
+                                        <span>No Image Available</span>
+                                       </div>`
+                                }
+                                <div class="status-badge status-${donation.status}">
+                                    ${donation.status.toUpperCase()}
+                                </div>
                             </div>
-                            
-                            <p style="margin-top: 15px; font-size: 12px; color: #888;">
-                                ID: ${donation.id} • ${new Date(donation.created_at).toLocaleDateString()}
-                            </p>
+                            <div class="food-info">
+                                <h3 class="food-name">${donation.food_name}</h3>
+                                ${donation.description ? `<p class="food-description">${donation.description}</p>` : ''}
+                                
+                                <div class="food-details">
+                                    <div class="detail-item">
+                                        <span class="detail-label">Quantity:</span>
+                                        <span>${donation.quantity} ${donation.unit}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Expires:</span>
+                                        <span>${donation.expiry_date}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Donor:</span>
+                                        <span>${donation.donor_name || 'Anonymous'}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Location:</span>
+                                        <span>${donation.location?.address || 'Not specified'}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="ai-badge ai-${aiStatus}">
+                                    <i class="fas fa-robot"></i> AI: ${aiClass.replace('_', ' ').toUpperCase()}
+                                </div>
+                                
+                                <div class="actions">
+                                    <button onclick="claimDonation(${donation.id})" class="btn btn-small" ${donation.status !== 'available' ? 'disabled style="opacity:0.5"' : ''}>
+                                        <i class="fas fa-check"></i> ${donation.status === 'available' ? 'Claim' : 'Claimed'}
+                                    </button>
+                                    <button onclick="showUploadForDonation(${donation.id})" class="btn btn-small btn-warning">
+                                        <i class="fas fa-image"></i> Add Image
+                                    </button>
+                                </div>
+                                
+                                <p style="margin-top: 15px; font-size: 12px; color: #aaa;">
+                                    ID: ${donation.id} • Created: ${new Date(donation.created_at).toLocaleDateString()}
+                                </p>
+                            </div>
                         </div>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             }
             
-            // Upload image
-            async function uploadImage() {
-                const donationId = document.getElementById('donationId').value;
-                const fileInput = document.getElementById('imageInput');
-                const messageDiv = document.getElementById('uploadMessage');
+            // Create new donation
+            async function createDonation() {
+                const foodName = document.getElementById('foodName').value;
+                const description = document.getElementById('description').value;
+                const quantity = document.getElementById('quantity').value;
+                const expiryDate = document.getElementById('expiryDate').value;
+                const imageFile = document.getElementById('imageUpload').files[0];
                 
-                if (!donationId) {
-                    messageDiv.innerHTML = '<div class="error">Please enter a donation ID</div>';
+                if (!foodName || !expiryDate) {
+                    showMessage('error', 'Please fill in all required fields (Food Name and Expiry Date)');
                     return;
                 }
                 
-                if (!fileInput.files[0]) {
-                    messageDiv.innerHTML = '<div class="error">Please select an image file</div>';
-                    return;
+                try {
+                    showMessage('loading', 'Creating donation...');
+                    
+                    // Create donation data
+                    const donationData = {
+                        food_name: foodName,
+                        description: description,
+                        quantity: parseInt(quantity),
+                        expiry_date: expiryDate,
+                        donor_name: "Your Restaurant", // You can change this
+                        donor_contact: "contact@example.com",
+                        unit: "items",
+                        status: "available"
+                    };
+                    
+                    const response = await fetch(`${API_BASE}/donations`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(donationData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        showMessage('success', '✅ Donation created successfully!');
+                        
+                        // If image was selected, upload it
+                        if (imageFile && result.donation_id) {
+                            await uploadImage(result.donation_id, imageFile);
+                        }
+                        
+                        // Clear form and refresh
+                        document.getElementById('donationForm').reset();
+                        document.getElementById('expiryDate').value = formatDateForInput(new Date());
+                        setTimeout(loadDonations, 1500);
+                    } else {
+                        showMessage('error', `❌ ${result.error}`);
+                    }
+                } catch (error) {
+                    console.error('Create error:', error);
+                    showMessage('error', '❌ Failed to create donation');
                 }
-                
+            }
+            
+            // Upload image to donation
+            async function uploadImage(donationId, imageFile) {
                 const formData = new FormData();
-                formData.append('image', fileInput.files[0]);
+                formData.append('image', imageFile);
+                
+                try {
+                    const response = await fetch(`${API_BASE}/donations/${donationId}/upload-image`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    return result.success;
+                } catch (error) {
+                    console.error('Image upload error:', error);
+                    return false;
+                }
+            }
+            
+            // Claim donation
+            async function claimDonation(donationId) {
+                if (!confirm('Are you sure you want to claim this donation?')) return;
+                
+                try {
+                    const response = await fetch(`${API_BASE}/donations/${donationId}/claim`, {
+                        method: 'POST'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        alert('✅ Donation claimed successfully!');
+                        loadDonations();
+                    } else {
+                        alert(`❌ ${result.error}`);
+                    }
+                } catch (error) {
+                    console.error('Claim error:', error);
+                    alert('❌ Failed to claim donation');
+                }
+            }
+            
+            // Show upload section for existing donation
+            function showUploadForDonation(donationId) {
+                document.getElementById('uploadExistingSection').style.display = 'block';
+                document.getElementById('existingDonationId').value = donationId;
+            }
+            
+            function uploadImageToExisting() {
+                document.getElementById('uploadExistingSection').style.display = 'block';
+            }
+            
+            function hideUploadSection() {
+                document.getElementById('uploadExistingSection').style.display = 'none';
+            }
+            
+            // Upload to existing donation
+            async function uploadToExisting() {
+                const donationId = document.getElementById('existingDonationId').value;
+                const imageFile = document.getElementById('existingImageUpload').files[0];
+                const messageDiv = document.getElementById('existingUploadMessage');
+                
+                if (!donationId || !imageFile) {
+                    messageDiv.innerHTML = '<div class="error">Please enter donation ID and select an image</div>';
+                    return;
+                }
                 
                 try {
                     messageDiv.innerHTML = '<div class="loading">Uploading image...</div>';
+                    
+                    const formData = new FormData();
+                    formData.append('image', imageFile);
                     
                     const response = await fetch(`${API_BASE}/donations/${donationId}/upload-image`, {
                         method: 'POST',
@@ -579,24 +907,30 @@ def provider_dashboard():
                     
                     if (response.ok) {
                         messageDiv.innerHTML = '<div class="success">✅ Image uploaded successfully!</div>';
-                        // Clear form and refresh
-                        fileInput.value = '';
-                        document.getElementById('donationId').value = '';
-                        setTimeout(loadDonations, 1500);
+                        // Clear and hide
+                        setTimeout(() => {
+                            hideUploadSection();
+                            document.getElementById('existingDonationId').value = '';
+                            document.getElementById('existingImageUpload').value = '';
+                            loadDonations();
+                        }, 1500);
                     } else {
                         messageDiv.innerHTML = `<div class="error">❌ ${result.error}</div>`;
                     }
                 } catch (error) {
                     console.error('Upload error:', error);
-                    messageDiv.innerHTML = '<div class="error">❌ Upload failed. Check console.</div>';
+                    messageDiv.innerHTML = '<div class="error">❌ Upload failed</div>';
                 }
             }
             
-            // Load data on page load
-            document.addEventListener('DOMContentLoaded', function() {
-                loadStats();
-                loadDonations();
-            });
+            // Helper function to show messages
+            function showMessage(type, text) {
+                const div = document.getElementById('createMessage');
+                div.innerHTML = `<div class="message ${type}">${text}</div>`;
+                setTimeout(() => {
+                    div.innerHTML = '';
+                }, 5000);
+            }
         </script>
     </body>
     </html>
@@ -604,22 +938,25 @@ def provider_dashboard():
 
 # Run the application
 if __name__ == '__main__':
+    # Initialize database with sample data
+    with app.app_context():
+        init_db(app)
+    
     print("\n" + "="*60)
     print("🚀 FOOD DONATION PLATFORM")
     print("="*60)
     print(f"📊 Database: {DATABASE_PATH}")
-    print("🌐 API: http://localhost:5000")
+    print("🌐 API Server: http://localhost:5000")
     print("📱 Provider Dashboard: http://localhost:5000/provider")
     print("\n📋 Available Endpoints:")
-    print("  GET  /                     - API information")
-    print("  GET  /api/donations        - List all donations")
-    print("  GET  /api/donations/images - Donations with images")
-    print("  POST /api/donations        - Create new donation")
+    print("  GET  /                             - API information")
+    print("  GET  /api/donations                - List all donations")
+    print("  GET  /api/donations/images         - Donations with images")
+    print("  POST /api/donations                - Create new donation")
     print("  POST /api/donations/{id}/upload-image - Upload image")
-    print("  GET  /api/organizations    - List food banks")
-    print("  GET  /api/stats            - Platform statistics")
-    print("  POST /api/ai/classify      - AI food safety check")
-    print("  GET  /provider             - Provider dashboard")
+    print("  POST /api/donations/{id}/claim     - Claim donation")
+    print("  GET  /api/organizations            - List food banks")
+    print("  GET  /api/stats                    - Platform statistics")
     print("\n✅ Ready! Press Ctrl+C to stop")
     print("="*60 + "\n")
     
