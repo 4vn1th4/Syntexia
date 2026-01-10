@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- LEAFLET -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -136,6 +137,51 @@ body {
 </div>
 
 <script>
+/* Photo DB */
+  // 1. Initialize Supabase
+const supabaseUrl = 'YOUR_SUPABASE_URL';
+const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+const form = document.getElementById('providerForm');
+const result = document.getElementById('aiResult');
+const foodImageInput = document.getElementById('foodImage');
+
+form.addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const file = foodImageInput.files[0];
+  if (!file) {
+    alert("Please select a photo first!");
+    return;
+  }
+
+  result.textContent = "Uploading image to Cloud DB... ⏳";
+
+  // 2. Upload only the image
+  // We create a unique name so images don't overwrite each other
+  const fileName = `folder/${Date.now()}_${file.name}`;
+
+  const { data, error } = await supabase.storage
+    .from('food-photos') // Make sure you created this bucket in Supabase
+    .upload(fileName, file);
+
+  if (error) {
+    result.style.color = "red";
+    result.textContent = "Upload Error: " + error.message;
+    console.error(error);
+  } else {
+    result.style.color = "#22c55e";
+    result.textContent = "Image saved to Database successfully! ✅";
+    
+    // Optional: Get the link if you want to see it
+    const { data: urlData } = supabase.storage.from('food-photos').getPublicUrl(fileName);
+    console.log("Access your image here:", urlData.publicUrl);
+    
+    form.reset();
+  }
+});
+  
 /* MAP */
 let map = L.map('map').setView([25.2048, 55.2708], 10);
 
@@ -199,3 +245,4 @@ form.addEventListener('submit', function(e){
 
 </body>
 </html>
+
