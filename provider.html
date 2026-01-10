@@ -10,109 +10,30 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-body {
-  font-family: "Inter", sans-serif;
-  background: radial-gradient(circle at top right, #0f2a44, #050b14);
-  color: #e5e7eb;
-  line-height: 1.6;
-}
-nav {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 1200px;
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(14px);
-  border-radius: 18px;
-  padding: 14px 28px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 1000;
-}
-.logo {
-  font-size: 2em;
-  color: #22c55e;
-  background: transparent;
-  border: none;
-}
-.nav-btn {
-  padding: 8px 16px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.25);
-  background: transparent;
-  color: white;
-  cursor: pointer;
-}
-.main-container {
-  padding: 160px 8% 40px;
-  max-width: 1400px;
-  margin: auto;
-}
-.add-listing-bar {
-  width: 100%;
-  background: linear-gradient(135deg, rgba(34,197,94,0.35), rgba(59,130,246,0.25));
-  border-radius: 20px;
-  padding: 26px 32px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 0 80px rgba(34,197,94,0.25);
-  margin-bottom: 60px;
-}
-.add-listing-bar h1 { font-size: 34px; font-weight: 600; }
-.add-listing-bar p { color: #cbd5e1; font-size: 15px; }
-.add-btn {
-  padding: 14px 30px;
-  font-size: 15px;
-  border-radius: 14px;
-  border: none;
-  cursor: pointer;
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  color: #04110a;
-  font-weight: 600;
-}
-.listings-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 32px;
-}
-.listing-card {
-  background: rgba(255,255,255,0.06);
-  border-radius: 22px;
-  backdrop-filter: blur(10px);
-  overflow: hidden;
-  transition: transform 0.3s ease;
-}
-.listing-card:hover { transform: translateY(-6px); }
-.listing-card img { width: 100%; height: 190px; object-fit: cover; }
-.card-content { padding: 24px; }
-.card-content h3 { font-size: 20px; margin-bottom: 8px; }
-.card-content p { font-size: 14px; color: #cbd5e1; margin-bottom: 6px; }
-.card-location { margin-top: 10px; font-size: 13px; opacity: 0.85; }
-.locate-btn {
-  margin-top: 18px;
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  border: none;
-  background: rgba(34,197,94,0.15);
-  color: #22c55e;
-  font-weight: 600;
-  cursor: pointer;
-}
-.locate-btn:hover { background: #22c55e; color: #04110a; }
-#map-container { display:none; padding: 40px 8%; }
-#map { height: 420px; border-radius: 18px; box-shadow: 0 0 40px rgba(34,197,94,0.25); }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:"Inter", sans-serif; background: radial-gradient(circle at top right, #0f2a44, #050b14); color:#e5e7eb; line-height:1.6; }
+nav { position:fixed; top:20px; left:50%; transform:translateX(-50%); width:90%; max-width:1200px; background:rgba(255,255,255,0.08); backdrop-filter: blur(14px); border-radius:18px; padding:14px 28px; display:flex; justify-content:space-between; align-items:center; z-index:1000; }
+.logo { font-size:2em; color:#22c55e; background:transparent; border:none; }
+.nav-btn { padding:8px 16px; border-radius:10px; border:1px solid rgba(255,255,255,0.25); background:transparent; color:white; cursor:pointer; }
+.main-container { padding:160px 8% 40px; max-width:1400px; margin:auto; }
+.add-listing-bar { width:100%; background:linear-gradient(135deg, rgba(34,197,94,0.35), rgba(59,130,246,0.25)); border-radius:20px; padding:26px 32px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 0 80px rgba(34,197,94,0.25); margin-bottom:60px; }
+.add-listing-bar h1 { font-size:34px; font-weight:600; }
+.add-listing-bar p { color:#cbd5e1; font-size:15px; }
+.add-btn { padding:14px 30px; font-size:15px; border-radius:14px; border:none; cursor:pointer; background:linear-gradient(135deg, #22c55e, #16a34a); color:#04110a; font-weight:600; }
+.listings-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap:32px; max-height:1000px; overflow-y:auto; padding-right:8px; } 
+.listing-card { background: rgba(255,255,255,0.06); border-radius:22px; backdrop-filter: blur(10px); overflow:hidden; transition:transform 0.3s ease; }
+.listing-card:hover { transform:translateY(-6px); }
+.listing-card img { width:100%; height:190px; object-fit:cover; }
+.card-content { padding:24px; }
+.card-content h3 { font-size:20px; margin-bottom:8px; }
+.card-content p { font-size:14px; color:#cbd5e1; margin-bottom:6px; }
+.card-location { margin-top:10px; font-size:13px; opacity:0.85; }
+.locate-btn { margin-top:18px; width:100%; padding:12px; border-radius:12px; border:none; background: rgba(34,197,94,0.15); color:#22c55e; font-weight:600; cursor:pointer; }
+.locate-btn:hover { background:#22c55e; color:#04110a; }
+#map-container { display:none; padding:40px 8%; }
+#map { height:420px; border-radius:18px; box-shadow:0 0 40px rgba(34,197,94,0.25); }
 #routeInfo { margin-top:15px; font-weight:bold; }
-@media (max-width:900px) { .add-listing-bar { flex-direction: column; gap:20px; text-align:center; } }
+@media (max-width:900px) { .add-listing-bar { flex-direction:column; gap:20px; text-align:center; } }
 </style>
 </head>
 
@@ -139,33 +60,139 @@ nav {
 
   <div class="listings-grid">
 
+    <!-- Listing 1 -->
     <div class="listing-card">
       <img src="https://images.unsplash.com/photo-1542838132-92c53300491e">
       <div class="card-content">
         <h3>Fresh Vegetables</h3>
         <p>Quantity: 30 kg</p>
         <p>Expiry: Today, 8 PM</p>
-        <div class="card-location">📍 Sharjah</div>
-        <button class="locate-btn" onclick="locateProvider(25.2048, 55.2708)">Locate Now</button>
+        <div class="card-location">📍 Lagos, Nigeria</div>
+        <button class="locate-btn" onclick="locateProvider(6.5244,3.3792)">Locate Now</button>
         <button class="locate-btn" onclick="window.location.href='mailto:provider@example.com'">Contact Now</button>
       </div>
     </div>
 
+    <!-- Listing 2 -->
     <div class="listing-card">
       <img src="https://images.unsplash.com/photo-1604908177522-4291bcd34c56">
       <div class="card-content">
         <h3>Cooked Meals</h3>
         <p>Quantity: 20 meals</p>
         <p>Expiry: Today, 7 PM</p>
-        <div class="card-location">📍 Dubai</div>
-        <button class="locate-btn" onclick="locateProvider(25.276987, 55.296249)">Locate Now</button>
+        <div class="card-location">📍 Cairo, Egypt</div>
+        <button class="locate-btn" onclick="locateProvider(30.0444,31.2357)">Locate Now</button>
+        <button class="locate-btn" onclick="window.location.href='mailto:provider@example.com'">Contact Now</button>
+      </div>
+    </div>
+
+    <!-- Listing 3 -->
+    <div class="listing-card">
+      <img src="https://images.unsplash.com/photo-1589307000273-0c02054f7c16">
+      <div class="card-content">
+        <h3>Fruit Basket</h3>
+        <p>Quantity: 15 kg</p>
+        <p>Expiry: Tomorrow, 10 AM</p>
+        <div class="card-location">📍 Nairobi, Kenya</div>
+        <button class="locate-btn" onclick="locateProvider(-1.2921,36.8219)">Locate Now</button>
+        <button class="locate-btn" onclick="window.location.href='mailto:provider@example.com'">Contact Now</button>
+      </div>
+    </div>
+
+    <!-- Listing 4 -->
+    <div class="listing-card">
+      <img src="https://images.unsplash.com/photo-1588576582704-4f3aa3c4a4f4">
+      <div class="card-content">
+        <h3>Bread Packs</h3>
+        <p>Quantity: 50 packs</p>
+        <p>Expiry: Today, 6 PM</p>
+        <div class="card-location">📍 Cape Town, South Africa</div>
+        <button class="locate-btn" onclick="locateProvider(-33.9249,18.4241)">Locate Now</button>
+        <button class="locate-btn" onclick="window.location.href='mailto:provider@example.com'">Contact Now</button>
+      </div>
+    </div>
+
+    <!-- Listing 5 -->
+    <div class="listing-card">
+      <img src="https://images.unsplash.com/photo-1585238342028-7b31f20f0f4d">
+      <div class="card-content">
+        <h3>Rice Bags</h3>
+        <p>Quantity: 100 kg</p>
+        <p>Expiry: Today, 9 PM</p>
+        <div class="card-location">📍 Accra, Ghana</div>
+        <button class="locate-btn" onclick="locateProvider(5.6037,-0.1870)">Locate Now</button>
+        <button class="locate-btn" onclick="window.location.href='mailto:provider@example.com'">Contact Now</button>
+      </div>
+    </div>
+
+    <!-- Listing 6 -->
+    <div class="listing-card">
+      <img src="https://images.unsplash.com/photo-1606813909140-7c1344e6e12b">
+      <div class="card-content">
+        <h3>Milk Packs</h3>
+        <p>Quantity: 60 liters</p>
+        <p>Expiry: Today, 5 PM</p>
+        <div class="card-location">📍 Casablanca, Morocco</div>
+        <button class="locate-btn" onclick="locateProvider(33.5731,-7.5898)">Locate Now</button>
+        <button class="locate-btn" onclick="window.location.href='mailto:provider@example.com'">Contact Now</button>
+      </div>
+    </div>
+
+    <!-- Listing 7 -->
+    <div class="listing-card">
+      <img src="https://images.unsplash.com/photo-1589307000273-0c02054f7c16">
+      <div class="card-content">
+        <h3>Egg Cartons</h3>
+        <p>Quantity: 200 eggs</p>
+        <p>Expiry: Tomorrow, 8 AM</p>
+        <div class="card-location">📍 Addis Ababa, Ethiopia</div>
+        <button class="locate-btn" onclick="locateProvider(9.0300,38.7400)">Locate Now</button>
+        <button class="locate-btn" onclick="window.location.href='mailto:provider@example.com'">Contact Now</button>
+      </div>
+    </div>
+
+    <!-- Listing 8 -->
+    <div class="listing-card">
+      <img src="https://images.unsplash.com/photo-1598514982813-21e8c39e6c12">
+      <div class="card-content">
+        <h3>Vegetable Packs</h3>
+        <p>Quantity: 40 packs</p>
+        <p>Expiry: Today, 7 PM</p>
+        <div class="card-location">📍 Dakar, Senegal</div>
+        <button class="locate-btn" onclick="locateProvider(14.7167,-17.4677)">Locate Now</button>
+        <button class="locate-btn" onclick="window.location.href='mailto:provider@example.com'">Contact Now</button>
+      </div>
+    </div>
+
+    <!-- Listing 9 -->
+    <div class="listing-card">
+      <img src="https://images.unsplash.com/photo-1588576582704-4f3aa3c4a4f4">
+      <div class="card-content">
+        <h3>Fruit Packs</h3>
+        <p>Quantity: 25 kg</p>
+        <p>Expiry: Tomorrow, 9 AM</p>
+        <div class="card-location">📍 Tunis, Tunisia</div>
+        <button class="locate-btn" onclick="locateProvider(36.8065,10.1815)">Locate Now</button>
+        <button class="locate-btn" onclick="window.location.href='mailto:provider@example.com'">Contact Now</button>
+      </div>
+    </div>
+
+    <!-- Listing 10 -->
+    <div class="listing-card">
+      <img src="https://images.unsplash.com/photo-1585238342028-7b31f20f0f4d">
+      <div class="card-content">
+        <h3>Milk Bottles</h3>
+        <p>Quantity: 30 liters</p>
+        <p>Expiry: Today, 6 PM</p>
+        <div class="card-location">📍 Kampala, Uganda</div>
+        <button class="locate-btn" onclick="locateProvider(0.3476,32.5825)">Locate Now</button>
         <button class="locate-btn" onclick="window.location.href='mailto:provider@example.com'">Contact Now</button>
       </div>
     </div>
 
   </div>
 
-  <!-- MAP SECTION (hidden initially) -->
+  <!-- MAP CONTAINER -->
   <div id="map-container">
     <h2>📍 Choose Your Location</h2>
     <p>Click on the map to set your location</p>
@@ -178,16 +205,15 @@ nav {
 <script>
 let map, providerMarker, userMarker, routeLine;
 
-function locateProvider(lat, lng){
+function locateProvider(lat,lng){
   const mapContainer = document.getElementById('map-container');
-  mapContainer.style.display = 'block';
+  mapContainer.style.display='block';
   mapContainer.scrollIntoView({behavior:'smooth'});
 
-  // Initialize map once
   if(!map){
-    map = L.map('map').setView([lat, lng], 12);
+    map=L.map('map').setView([lat,lng],6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap'
+      attribution:'© OpenStreetMap'
     }).addTo(map);
   }
 
@@ -195,31 +221,26 @@ function locateProvider(lat, lng){
   if(userMarker) map.removeLayer(userMarker);
   if(routeLine) map.removeLayer(routeLine);
 
-  // Provider marker
-  providerMarker = L.marker([lat, lng]).addTo(map).bindPopup("Provider Location").openPopup();
+  providerMarker = L.marker([lat,lng]).addTo(map).bindPopup("Provider Location").openPopup();
 
-  // Listen for user click on map
   map.once('click', function(e){
-    const userLatLng = e.latlng;
+    const userLatLng=e.latlng;
     if(userMarker) map.removeLayer(userMarker);
     if(routeLine) map.removeLayer(routeLine);
 
     userMarker = L.marker(userLatLng).addTo(map).bindPopup("Your Location").openPopup();
     routeLine = L.polyline([providerMarker.getLatLng(), userLatLng], {dashArray:'6,6'}).addTo(map);
 
-    // Distance in km
     const distance = providerMarker.getLatLng().distanceTo(userLatLng)/1000;
-    const time = (distance/40)*60; // 40 km/h
+    const time = (distance/40)*60;
     document.getElementById('routeInfo').innerHTML =
       `🚗 Distance: ${distance.toFixed(2)} km | ⏱ Estimated Time: ${time.toFixed(0)} mins`;
 
-    // Fit map to markers
     const group = new L.featureGroup([providerMarker, userMarker]);
     map.fitBounds(group.getBounds().pad(0.5));
   });
 
-  // Center map on provider
-  map.setView([lat,lng],12);
+  map.setView([lat,lng],6);
 }
 </script>
 
