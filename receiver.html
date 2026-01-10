@@ -10,94 +10,72 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: Inter, sans-serif; background: radial-gradient(circle at top right, #0f2a44, #050b14); color: #e5e7eb; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:"Inter", sans-serif; background: radial-gradient(circle at top right, #0f2a44, #050b14); color:#e5e7eb; }
 
 /* NAVBAR */
 nav {
-  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-  width: 90%; max-width: 1200px; background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(14px); border-radius: 18px; padding: 14px 28px;
-  display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+  position: fixed;
+  top: 20px; left: 50%; transform: translateX(-50%);
+  width: 90%; max-width:1200px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(14px);
+  border-radius:18px; padding:14px 28px;
+  display:flex; justify-content:space-between; align-items:center; z-index:1000;
 }
-.logo {
-  margin: 0;
-  height: auto;
-  background: transparent;
-  padding: 0;
-  border: none;
+.logo { font-size:2em; color:#22c55e; background:transparent; border:none; }
+.nav-btn { padding:8px 16px; border-radius:10px; border:1px solid rgba(255,255,255,0.25); background:transparent; color:white; cursor:pointer; }
+
+.main-container { padding:160px 8% 40px; max-width:1400px; margin:auto; }
+
+/* DASHBOARD BAR */
+.dashboard-bar {
+  background: linear-gradient(135deg, rgba(34,197,94,0.35), rgba(59,130,246,0.25));
+  border-radius: 20px;
+  padding:26px 32px;
+  margin-bottom:50px;
+  box-shadow: 0 0 80px rgba(34,197,94,0.25);
 }
 
-/* button styling */
-.logo {
-  --border-right: 6px;
-  --text-stroke-color: rgba(201, 187, 187, 0.6);
-  --animation-color: #22c55e;
-  --fs-size: 2em;
-  letter-spacing: 3px;
-  text-decoration: none;
-  font-size: var(--fs-size);
-  font-family: "Arial";
-  position: relative;
-  text-transform: uppercase;
-  color: transparent;
-  -webkit-text-stroke: 1px var(--text-stroke-color);
+/* LISTINGS GRID */
+.listings-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px,1fr));
+  gap:32px;
+  max-height:1000px;
+  overflow-y:auto;
+  padding-right:8px;
 }
-/* this is the text, when you hover on button */
-.hover-text {
-  position: absolute;
-  box-sizing: border-box;
-  content: attr(data-text);
-  color: var(--animation-color);
-  width: 0%;
-  inset: 0;
-  border-right: var(--border-right) solid var(--animation-color);
-  overflow: hidden;
-  transition: 0.5s;
-  -webkit-text-stroke: 1px var(--animation-color);
+
+/* SLEEK SCROLLBAR */
+.listings-grid::-webkit-scrollbar { width:8px; }
+.listings-grid::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius:4px; }
+.listings-grid::-webkit-scrollbar-thumb { background: rgba(34,197,94,0.6); border-radius:4px; transition: background 0.3s; }
+.listings-grid::-webkit-scrollbar-thumb:hover { background: rgba(34,197,94,0.9); }
+
+.listing-card {
+  background: rgba(255,255,255,0.06); border-radius:22px; padding:24px;
 }
-/* hover */
-.logo:hover .hover-text {
-  width: 100%;
-  filter: drop-shadow(0 0 23px var(--animation-color))
+.card-content h3 { font-size:20px; margin-bottom:8px; }
+.card-content p { font-size:14px; color:#cbd5e1; margin-bottom:6px; }
+.card-location { margin-top:10px; font-size:13px; opacity:0.85; }
+.locate-btn {
+  margin-top:14px; width:100%; padding:12px; border-radius:12px; border:none;
+  background: rgba(34,197,94,0.15); color:#22c55e; font-weight:600; cursor:pointer;
 }
-.nav-btn { padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.25); background: transparent; color: white; cursor: pointer; }
-
-/* MAIN */
-.main-container { padding: 160px 8% 80px; max-width: 1400px; margin: auto; }
-
-/* DASHBOARD */
-.dashboard-bar { background: linear-gradient(135deg, rgba(34,197,94,0.35), rgba(59,130,246,0.25)); border-radius: 20px; padding: 26px 32px; margin-bottom: 30px; box-shadow: 0 0 80px rgba(34,197,94,0.25); }
-
-/* LISTINGS */
-.listings-grid { display: grid; grid-template-columns: 1fr; gap: 24px; max-height: 700px; overflow-y: auto; padding-right: 8px; }
-.listing-card { background: rgba(255,255,255,0.06); border-radius: 22px; padding: 24px; display: flex; gap: 20px; align-items: center; }
-.listing-card img { width: 120px; height: 120px; object-fit: cover; border-radius: 16px; }
-.listing-info { flex: 1; }
-.listing-info h3 { margin-bottom: 6px; }
-.listing-info p { margin-bottom: 4px; font-size: 14px; color: #cbd5e1; }
-.locate-btn { padding: 10px 14px; border-radius: 12px; border: none; background: rgba(34,197,94,0.15); color: #22c55e; font-weight: 600; cursor: pointer; }
-.locate-btn:hover { background: #22c55e; color: #04110a; }
+.locate-btn:hover { background:#22c55e; color:#04110a; }
 
 /* MAP */
-#map-section { padding: 40px 0 80px 0; display: none; flex-direction: column; gap: 12px; }
-#map { height: 420px; border-radius: 18px; box-shadow: 0 0 40px rgba(34,197,94,0.25); }
-#routeInfo { font-weight: bold; }
-
-/* SCROLLBAR */
-.listings-grid::-webkit-scrollbar { width: 8px; }
-.listings-grid::-webkit-scrollbar-thumb { background: rgba(34,197,94,0.5); border-radius: 4px; }
-
+#map-container { display:none; padding:40px 0; }
+#map { height:420px; border-radius:18px; box-shadow:0 0 40px rgba(34,197,94,0.25); }
+#routeInfo { margin-top:15px; font-weight:bold; }
 </style>
 </head>
 
 <body>
-<!-- NAVBAR -->
+
 <nav>
-  <button class="logo" data-text="Awesome">
-    <span class="actual-text">&nbsp;FOODLINK&nbsp;</span>
-    <span aria-hidden="true" class="hover-text">&nbsp;FOODLINK&nbsp;</span>
- </button>
+  <button class="logo">NourishNet</button>
   <div>
     <button class="nav-btn" onclick="location.href='index.html'">Home</button>
     <button class="nav-btn" onclick="location.href='provider.html'">Provider</button>
@@ -105,85 +83,99 @@ nav {
   </div>
 </nav>
 
-<!-- MAIN -->
 <div class="main-container">
+
   <div class="dashboard-bar">
     <h1>Receiver Dashboard</h1>
-    <p>Browse available food providers near you</p>
+    <p>Browse nearby NGOs and food providers</p>
   </div>
 
-  <!-- DYNAMIC LISTINGS -->
-  <div class="listings-grid" id="listings"></div>
+  <!-- LISTINGS -->
+  <div class="listings-grid">
+    <div class="listing-card">
+      <div class="card-content">
+        <h3>Hope NGO</h3>
+        <p>Servicing area: Lagos, Nigeria</p>
+        <p>Contact: hope.ngo@example.com</p>
+        <div class="card-location">📍 Lagos, Nigeria</div>
+        <button class="locate-btn" onclick="locateReceiver(6.5244,3.3792)">Locate Now</button>
+      </div>
+    </div>
 
-  <!-- MAP SECTION -->
-  <div id="map-section">
-    <h2>📍 Provider Location</h2>
+    <div class="listing-card">
+      <div class="card-content">
+        <h3>FoodBank Cairo</h3>
+        <p>Servicing area: Cairo, Egypt</p>
+        <p>Contact: foodbank.cairo@example.com</p>
+        <div class="card-location">📍 Cairo, Egypt</div>
+        <button class="locate-btn" onclick="locateReceiver(30.0444,31.2357)">Locate Now</button>
+      </div>
+    </div>
+
+    <div class="listing-card">
+      <div class="card-content">
+        <h3>Nairobi Helpers</h3>
+        <p>Servicing area: Nairobi, Kenya</p>
+        <p>Contact: nairobi.helpers@example.com</p>
+        <div class="card-location">📍 Nairobi, Kenya</div>
+        <button class="locate-btn" onclick="locateReceiver(-1.2921,36.8219)">Locate Now</button>
+      </div>
+    </div>
+
+    <!-- Add more listings as needed -->
+  </div>
+
+  <!-- MAP CONTAINER -->
+  <div id="map-container">
+    <h2>📍 Choose Your Location</h2>
+    <p>Click on the map to set your location</p>
     <div id="map"></div>
     <p id="routeInfo"></p>
   </div>
+
 </div>
 
 <script>
-/* MAP INIT */
-let map, providerMarker, userMarker, routeLine;
+let map, ngoMarker, userMarker, routeLine;
 
-/* SAMPLE LISTINGS */
-const listings = [
-  { name: "Fresh Vegetables", quantity: "30 kg", lat: 0.3476, lng: 32.5825, img: "https://images.pexels.com/photos/70497/pexels-photo-70497.jpeg?auto=compress&cs=tinysrgb&w=800" },
-  { name: "Cooked Meals", quantity: "20 meals", lat: -1.2921, lng: 36.8219, img: "https://images.pexels.com/photos/262959/pexels-photo-262959.jpeg?auto=compress&cs=tinysrgb&w=800" },
-  { name: "Rice Bags", quantity: "50 kg", lat: 6.5244, lng: 3.3792, img: "https://images.pexels.com/photos/2097090/pexels-photo-2097090.jpeg?auto=compress&cs=tinysrgb&w=800" },
-  { name: "Bread Packs", quantity: "40 packs", lat: 9.0820, lng: 8.6753, img: "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800" },
-  { name: "Fruits", quantity: "25 kg", lat: -26.2041, lng: 28.0473, img: "https://images.pexels.com/photos/1437267/pexels-photo-1437267.jpeg?auto=compress&cs=tinysrgb&w=800" },
-  { name: "Milk Bottles", quantity: "60 bottles", lat: 1.2921, lng: 36.8219, img: "https://images.pexels.com/photos/691167/pexels-photo-691167.jpeg?auto=compress&cs=tinysrgb&w=800" },
-  { name: "Egg Cartons", quantity: "100 cartons", lat: -33.9249, lng: 18.4241, img: "https://images.pexels.com/photos/461198/pexels-photo-461198.jpeg?auto=compress&cs=tinysrgb&w=800" },
-  { name: "Packaged Veggies", quantity: "35 packs", lat: 7.8731, lng: 80.7718, img: "https://images.pexels.com/photos/1656667/pexels-photo-1656667.jpeg?auto=compress&cs=tinysrgb&w=800" }
-];
+function locateReceiver(lat,lng){
+  const mapContainer = document.getElementById('map-container');
+  mapContainer.style.display='block';
+  mapContainer.scrollIntoView({behavior:'smooth'});
 
-/* LOAD LISTINGS */
-const container = document.getElementById("listings");
-listings.forEach((item,index) => {
-  container.innerHTML += `
-    <div class="listing-card">
-      <img src="${item.img}" alt="${item.name}">
-      <div class="listing-info">
-        <h3>${item.name}</h3>
-        <p>Quantity: ${item.quantity}</p>
-        <p>Location: Africa</p>
-        <button class="locate-btn" onclick="locateProvider(${item.lat}, ${item.lng})">Locate Now</button>
-      </div>
-    </div>
-  `;
-});
-
-/* LOCATE PROVIDER FUNCTION */
-function locateProvider(lat, lng){
   if(!map){
-    map = L.map('map').setView([lat, lng], 6);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-  } else {
-    map.setView([lat,lng],6);
-    if(providerMarker) map.removeLayer(providerMarker);
-    if(userMarker) map.removeLayer(userMarker);
-    if(routeLine) map.removeLayer(routeLine);
+    map = L.map('map').setView([lat,lng],6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:'© OpenStreetMap'
+    }).addTo(map);
   }
 
-  document.getElementById('map-section').style.display='flex';
+  if(ngoMarker) map.removeLayer(ngoMarker);
+  if(userMarker) map.removeLayer(userMarker);
+  if(routeLine) map.removeLayer(routeLine);
 
-  providerMarker = L.marker([lat,lng]).addTo(map).bindPopup("Provider Location").openPopup();
+  ngoMarker = L.marker([lat,lng]).addTo(map).bindPopup("NGO Location").openPopup();
 
-  map.on('click', function(e){
+  map.once('click', function(e){
+    const userLatLng = e.latlng;
     if(userMarker) map.removeLayer(userMarker);
     if(routeLine) map.removeLayer(routeLine);
-    userMarker = L.marker(e.latlng).addTo(map).bindPopup("Your Location").openPopup();
-    routeLine = L.polyline([providerMarker.getLatLng(), e.latlng], { dashArray: '6,6' }).addTo(map);
 
-    const distance = providerMarker.getLatLng().distanceTo(e.latlng)/1000;
+    userMarker = L.marker(userLatLng).addTo(map).bindPopup("Your Location").openPopup();
+    routeLine = L.polyline([ngoMarker.getLatLng(), userLatLng], {dashArray:'6,6'}).addTo(map);
+
+    const distance = ngoMarker.getLatLng().distanceTo(userLatLng)/1000;
     const time = (distance/40)*60;
-    document.getElementById('routeInfo').innerHTML = `🚗 Distance: ${distance.toFixed(2)} km | ⏱ Estimated Time: ${time.toFixed(0)} mins`;
-  });
-}
+    document.getElementById('routeInfo').innerHTML =
+      `🚗 Distance: ${distance.toFixed(2)} km | ⏱ Estimated Time: ${time.toFixed(0)} mins`;
 
+    const group = new L.featureGroup([ngoMarker, userMarker]);
+    map.fitBounds(group.getBounds().pad(0.5));
+  });
+
+  map.setView([lat,lng],6);
+}
 </script>
+
 </body>
 </html>
-
