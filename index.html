@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FoodLink - Redefining Sustainability</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+  /* ================= RESET ================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top right, #0f2a44, #050b14);
+  color: #e5e7eb;
+  line-height: 1.6;
+}
+
+/* ================= NAVBAR ================= */
+nav {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 1200px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  border-radius: 18px;
+  padding: 14px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* From Uiverse.io by abdul12commando */
+/* === removing default button style ===*/
+.logo {
+  margin: 0;
+  height: auto;
+  background: transparent;
+  padding: 0;
+  border: none;
+}
+
+/* button styling */
+.logo {
+  --border-right: 6px;
+  --text-stroke-color: rgba(201, 187, 187, 0.6);
+  --animation-color: #22c55e;
+  --fs-size: 2em;
+  letter-spacing: 3px;
+  text-decoration: none;
+  font-size: var(--fs-size);
+  font-family: "Arial";
+  position: relative;
+  text-transform: uppercase;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--text-stroke-color);
+}
+/* this is the text, when you hover on button */
+.hover-text {
+  position: absolute;
+  box-sizing: border-box;
+  content: attr(data-text);
+  color: var(--animation-color);
+  width: 0%;
+  inset: 0;
+  border-right: var(--border-right) solid var(--animation-color);
+  overflow: hidden;
+  transition: 0.5s;
+  -webkit-text-stroke: 1px var(--animation-color);
+}
+/* hover */
+.logo:hover .hover-text {
+  width: 100%;
+  filter: drop-shadow(0 0 23px var(--animation-color))
+}
+
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 24px;
+}
+
+nav ul li {
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+nav ul li:hover {
+  opacity: 1;
+}
+
+.nav-btn {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: transparent;
+  color: white;
+  cursor: pointer;
+}
+
+/* ================= SECTIONS ================= */
+section {
+  padding: 120px 8%;
+}
+
+/* ================= HERO ================= */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  align-items: center;
+  gap: 60px;
+}
+
+.hero h1 {
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 20px;
+}
+
+.hero p {
+  font-size: 18px;
+  max-width: 520px;
+  color: #cbd5e1;
+  margin-bottom: 35px;
+}
+
+.hero button {
+  padding: 14px 28px;
+  font-size: 15px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #04110a;
+  font-weight: 600;
+
+}
+
+/* Abstract visual */
+.visual-box {
+  height: 380px;
+  width: 540px;
+  border-radius: 24px;
+  /* background: linear-gradient(
+    135deg,
+    rgba(34,197,94,0.35),
+    rgba(59,130,246,0.25)
+  ); */
+  box-shadow: 0 0 120px rgba(34,197,94,0.25);
+}
+
+/* ================= PURPOSE ================= */
+.purpose {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 80px;
+  align-items: start;
+}
+
+.purpose .label {
+  font-size: 40px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.purpose h2 {
+  font-size: 40px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.purpose p {
+  max-width: 650px;
+  font-size: 17px;
+  color: #cbd5e1;
+}
+
+/* ================= HOW IT WORKS ================= */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.card {
+  background: rgba(255,255,255,0.06);
+  border-radius: 22px;
+  padding: 32px;
+  backdrop-filter: blur(10px);
+}
+
+.card h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.card p {
+  font-size: 15px;
+  color: #cbd5e1;
+}
+
+/* ================= IMPACT ================= */
+.impact {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.metric {
+  text-align: left;
+}
+
+.metric h3 {
+  font-size: 42px;
+  color: #22c55e;
+}
+
+.metric p {
+  opacity: 0.85;
+}
+
+/* ================= FOOTER ================= */
+footer {
+  padding: 60px 8%;
+  opacity: 0.6;
+  font-size: 14px;
+  text-align:center;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+  .purpose {
+    grid-template-columns: 1fr;
+  }
+  .cards {
+    grid-template-columns: 1fr;
+  }
+  .impact {
+    flex-direction: column;
+  }
+}
+
+</style>
+</head>
+
+
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <!-- <div class="logo">FOODLINK</div> -->
+  <button class="logo" data-text="Awesome">
+    <span class="actual-text">&nbsp;FOODLINK&nbsp;</span>
+    <span aria-hidden="true" class="hover-text">&nbsp;FOODLINK&nbsp;</span>
+ </button>
+  <ul>
+    <button class="nav-btn" onclick="location.href='index.html'">Home</button>
+    <button class="nav-btn" onclick="location.href='provider.html'">Provider</button>
+    <button class="nav-btn" onclick="location.href='receiver.html'">Receiver</button>
+  </ul>
+  <button class="nav-btn" onclick="location.href='login.html'">Login</button> 
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div>
+    <h1>
+      Turning Surplus<br>
+      Into Sustainable Impact
+    </h1>
+    <p>
+      A next-generation platform that connects large-scale food surplus
+      with NGOs using intelligent verification and smart distribution
+      reducing waste at the source.
+    </p>
+    <button class="get-started-btn" onclick="location.href='login.html'">
+  Get Started
+</button>
+  </div>
+  <div>
+    <img class="visual-box" src = "image.png"></img>
+  </div>
+</section>
+
+<!-- PURPOSE -->
+<section class="purpose">
+  <div class="label">Purpose</div>
+  <div>
+    <h2>To Redefine Food Sustainability at Scale</h2>
+    <p>
+      FoodLink exists to eliminate preventable food waste by acting as
+      a trusted digital mediator between surplus generators and social
+      impact organizations. Our approach prioritizes safety, efficiency,
+      and adoption - enabling governments and enterprises to act, not just plan.
+    </p>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section>
+  <div class="cards">
+    <div class="card">
+      <h3>Enterprise Surplus Intake</h3>
+      <p>Large food providers list surplus in structured, verified formats.</p>
+    </div>
+    <div class="card">
+      <h3>AI Safety & Freshness Layer</h3>
+      <p>Automated checks assess expiry, handling conditions, and usability.</p>
+    </div>
+    <div class="card">
+      <h3>Smart NGO Allocation</h3>
+      <p>Verified NGOs claim surplus based on proximity and capacity.</p>
+    </div>
+  </div>
+</section>
+
+<!-- IMPACT -->
+<section class="impact">
+  <div class="metric">
+    <h3>1M+</h3>
+    <p>Meals Rescued</p>
+  </div>
+  <div class="metric">
+    <h3>30%</h3>
+    <p>Waste Reduction</p>
+  </div>
+  <div class="metric">
+    <h3>SDG 2 • 12 • 13</h3>
+    <p>Aligned Impact</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  Privacy Policy | Terms & Conditions | All rights reserved.
+</footer>
+
+</body>
+</html>
