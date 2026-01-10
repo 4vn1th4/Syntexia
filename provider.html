@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FoodLink — Provider</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* ================= RESET ================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top right, #0f2a44, #050b14);
+  color: #e5e7eb;
+  line-height: 1.6;
+}
+
+/* ================= NAVBAR (EXACT SAME) ================= */
+nav {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 1200px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  border-radius: 18px;
+  padding: 14px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1000;
+}
+
+.logo {
+  background: transparent;
+  border: none;
+  --border-right: 6px;
+  --text-stroke-color: rgba(201, 187, 187, 0.6);
+  --animation-color: #22c55e;
+  --fs-size: 2em;
+  letter-spacing: 3px;
+  font-size: var(--fs-size);
+  position: relative;
+  text-transform: uppercase;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--text-stroke-color);
+}
+
+.hover-text {
+  position: absolute;
+  inset: 0;
+  color: var(--animation-color);
+  width: 0%;
+  border-right: var(--border-right) solid var(--animation-color);
+  overflow: hidden;
+  transition: 0.5s;
+  -webkit-text-stroke: 1px var(--animation-color);
+}
+
+.logo:hover .hover-text {
+  width: 100%;
+  filter: drop-shadow(0 0 23px var(--animation-color));
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 24px;
+}
+
+nav ul li {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+nav ul li:hover {
+  opacity: 1;
+}
+
+.nav-btn {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.25);
+  background: transparent;
+  color: white;
+  cursor: pointer;
+}
+
+/* ================= PAGE CONTAINER ================= */
+.main-container {
+  padding: 160px 8% 100px;
+  max-width: 1400px;
+  margin: auto;
+}
+
+/* ================= ADD LISTING BAR ================= */
+.add-listing-bar {
+  width: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(34,197,94,0.35),
+    rgba(59,130,246,0.25)
+  );
+  border-radius: 20px;
+  padding: 26px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 0 80px rgba(34,197,94,0.25);
+  margin-bottom: 60px;
+}
+
+.add-listing-bar h1 {
+  font-size: 34px;
+  font-weight: 600;
+}
+
+.add-listing-bar p {
+  color: #cbd5e1;
+  font-size: 15px;
+}
+
+.add-btn {
+  padding: 14px 30px;
+  font-size: 15px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: #04110a;
+  font-weight: 600;
+}
+
+/* ================= LISTINGS GRID ================= */
+.listings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 32px;
+}
+
+/* ================= LISTING CARD ================= */
+.listing-card {
+  background: rgba(255,255,255,0.06);
+  border-radius: 22px;
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.listing-card:hover {
+  transform: translateY(-6px);
+}
+
+.listing-card img {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+}
+
+.card-content {
+  padding: 24px;
+}
+
+.card-content h3 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.card-content p {
+  font-size: 14px;
+  color: #cbd5e1;
+  margin-bottom: 6px;
+}
+
+.card-location {
+  margin-top: 10px;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.locate-btn {
+  margin-top: 18px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(34,197,94,0.15);
+  color: #22c55e;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.locate-btn:hover {
+  background: #22c55e;
+  color: #04110a;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 900px) {
+  .add-listing-bar {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <button class="logo">
+    <span class="actual-text">&nbsp;FOODLINK&nbsp;</span>
+    <span class="hover-text">&nbsp;FOODLINK&nbsp;</span>
+  </button>
+  <ul>
+    <button class="nav-btn" onclick="location.href='index.html'">Home</button>
+    <button class="nav-btn" onclick="location.href='provider.html'">Provider</button>
+    <button class="nav-btn" onclick="location.href='receiver.html'">Receiver</button>
+  </ul>
+  <button class="nav-btn" onclick="location.href='login.html'">Login</button> 
+</nav>
+
+<!-- MAIN -->
+<div class="main-container">
+
+  <!-- ADD LISTING BAR -->
+  <div class="add-listing-bar">
+    <div>
+      <h1>Provider Dashboard</h1>
+      <p>Manage surplus food and connect with NGOs nearby</p>
+    </div>
+    <button class="add-btn" onclick="location.href='Addlisting.html'">
+      + Add New Listing
+    </button>
+  </div>
+
+  <!-- LISTINGS -->
+  <div class="listings-grid">
+
+    <div class="listing-card">
+      <img src="https://images.unsplash.com/photo-1542838132-92c53300491e">
+      <div class="card-content">
+        <h3>Fresh Vegetables</h3>
+        <p>Quantity: 30 kg</p>
+        <p>Expiry: Today, 8 PM</p>
+        <div class="card-location">📍 Sharjah</div>
+        <button class="locate-btn">Locate Now</button>
+        <button class="locate-btn" onclick="window.location.href='mailto:provider@example.com'">
+  Contact Now
+</button>
+      </div>
+    </div>
+
+    <div class="listing-card">
+      <img src="https://images.unsplash.com/photo-1604908177522-4291bcd34c56">
+      <div class="card-content">
+        <h3>Cooked Meals</h3>
+        <p>Quantity: 20 meals</p>
+        <p>Expiry: Today, 7 PM</p>
+        <div class="card-location">📍 Dubai</div>
+        <button class="locate-btn">Locate Now</button>
+        <button class="locate-btn" onclick="window.location.href='mailto:provider@example.com'">
+  Contact Now
+</button>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>
