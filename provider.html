@@ -5,6 +5,10 @@
 <title>FoodLink — Provider</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- LEAFLET -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <style>
 /* ================= RESET ================= */
 * {
@@ -20,7 +24,7 @@ body {
   line-height: 1.6;
 }
 
-/* ================= NAVBAR (EXACT SAME) ================= */
+/* ================= NAVBAR ================= */
 nav {
   position: fixed;
   top: 20px;
@@ -41,47 +45,8 @@ nav {
 .logo {
   background: transparent;
   border: none;
-  --border-right: 6px;
-  --text-stroke-color: rgba(201, 187, 187, 0.6);
-  --animation-color: #22c55e;
-  --fs-size: 2em;
-  letter-spacing: 3px;
-  font-size: var(--fs-size);
-  position: relative;
-  text-transform: uppercase;
-  color: transparent;
-  -webkit-text-stroke: 1px var(--text-stroke-color);
-}
-
-.hover-text {
-  position: absolute;
-  inset: 0;
-  color: var(--animation-color);
-  width: 0%;
-  border-right: var(--border-right) solid var(--animation-color);
-  overflow: hidden;
-  transition: 0.5s;
-  -webkit-text-stroke: 1px var(--animation-color);
-}
-
-.logo:hover .hover-text {
-  width: 100%;
-  filter: drop-shadow(0 0 23px var(--animation-color));
-}
-
-nav ul {
-  list-style: none;
-  display: flex;
-  gap: 24px;
-}
-
-nav ul li {
-  font-size: 14px;
-  opacity: 0.85;
-}
-
-nav ul li:hover {
-  opacity: 1;
+  font-size: 2em;
+  color: #22c55e;
 }
 
 .nav-btn {
@@ -95,7 +60,7 @@ nav ul li:hover {
 
 /* ================= PAGE CONTAINER ================= */
 .main-container {
-  padding: 160px 8% 100px;
+  padding: 160px 8% 40px;
   max-width: 1400px;
   margin: auto;
 }
@@ -103,11 +68,7 @@ nav ul li:hover {
 /* ================= ADD LISTING BAR ================= */
 .add-listing-bar {
   width: 100%;
-  background: linear-gradient(
-    135deg,
-    rgba(34,197,94,0.35),
-    rgba(59,130,246,0.25)
-  );
+  background: linear-gradient(135deg, rgba(34,197,94,0.35), rgba(59,130,246,0.25));
   border-radius: 20px;
   padding: 26px 32px;
   display: flex;
@@ -202,6 +163,23 @@ nav ul li:hover {
   color: #04110a;
 }
 
+/* ================= MAP CONTAINER ================= */
+#map-container {
+  display: none;
+  padding: 40px 8%;
+}
+
+#map {
+  height: 420px;
+  border-radius: 18px;
+  box-shadow: 0 0 40px rgba(34,197,94,0.25);
+}
+
+#routeInfo {
+  margin-top: 15px;
+  font-weight: bold;
+}
+
 /* ================= RESPONSIVE ================= */
 @media (max-width: 900px) {
   .add-listing-bar {
@@ -217,16 +195,12 @@ nav ul li:hover {
 
 <!-- NAVBAR -->
 <nav>
-  <button class="logo">
-    <span class="actual-text">&nbsp;FOODLINK&nbsp;</span>
-    <span class="hover-text">&nbsp;FOODLINK&nbsp;</span>
-  </button>
-  <ul>
+  <button class="logo">FOODLINK</button>
+  <div>
     <button class="nav-btn" onclick="location.href='index.html'">Home</button>
     <button class="nav-btn" onclick="location.href='provider.html'">Provider</button>
     <button class="nav-btn" onclick="location.href='receiver.html'">Receiver</button>
-  </ul>
-  <button class="nav-btn" onclick="location.href='login.html'">Login</button> 
+  </div>
 </nav>
 
 <!-- MAIN -->
@@ -238,14 +212,11 @@ nav ul li:hover {
       <h1>Provider Dashboard</h1>
       <p>Manage surplus food and connect with NGOs nearby</p>
     </div>
-    <button class="add-btn" onclick="location.href='Addlisting.html'">
-      + Add New Listing
-    </button>
+    <button class="add-btn" onclick="location.href='Addlisting.html'">+ Add New Listing</button>
   </div>
 
   <!-- LISTINGS -->
   <div class="listings-grid">
-
     <div class="listing-card">
       <img src="https://images.unsplash.com/photo-1542838132-92c53300491e">
       <div class="card-content">
@@ -253,10 +224,8 @@ nav ul li:hover {
         <p>Quantity: 30 kg</p>
         <p>Expiry: Today, 8 PM</p>
         <div class="card-location">📍 Sharjah</div>
-        <button class="locate-btn">Locate Now</button>
-        <button class="locate-btn" onclick="window.location.href='mailto:provider@example.com'">
-  Contact Now
-</button>
+        <button class="locate-btn" onclick="locateProvider(25.2048, 55.2708)">Locate Now</button>
+        <button class="locate-btn" onclick="window.location.href='mailto:provider@example.com'">Contact Now</button>
       </div>
     </div>
 
@@ -267,16 +236,66 @@ nav ul li:hover {
         <p>Quantity: 20 meals</p>
         <p>Expiry: Today, 7 PM</p>
         <div class="card-location">📍 Dubai</div>
-        <button class="locate-btn">Locate Now</button>
-        <button class="locate-btn" onclick="window.location.href='mailto:provider@example.com'">
-  Contact Now
-</button>
+        <button class="locate-btn" onclick="locateProvider(25.276987, 55.296249)">Locate Now</button>
+        <button class="locate-btn" onclick="window.location.href='mailto:provider@example.com'">Contact Now</button>
       </div>
     </div>
+  </div>
 
+  <!-- MAP CONTAINER (hidden initially) -->
+  <div id="map-container">
+    <h2>📍 Route</h2>
+    <div id="map"></div>
+    <p id="routeInfo"></p>
   </div>
 
 </div>
+
+<!-- JS -->
+<script>
+let map, providerMarker, userMarker, routeLine;
+
+// Example: fixed user coordinates (can be dynamic)
+const userLat = 25.285; 
+const userLng = 55.296;
+
+// Function to load map dynamically
+function locateProvider(lat, lng) {
+  const mapContainer = document.getElementById('map-container');
+  mapContainer.style.display = 'block';
+  mapContainer.scrollIntoView({behavior:'smooth'});
+
+  // Initialize map only once
+  if (!map) {
+    map = L.map('map').setView([lat, lng], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+  }
+
+  // Remove previous markers/lines
+  if (providerMarker) map.removeLayer(providerMarker);
+  if (userMarker) map.removeLayer(userMarker);
+  if (routeLine) map.removeLayer(routeLine);
+
+  // Add markers
+  providerMarker = L.marker([lat, lng]).addTo(map).bindPopup("Provider Location").openPopup();
+  userMarker = L.marker([userLat, userLng]).addTo(map).bindPopup("Your Location").openPopup();
+
+  // Draw route
+  routeLine = L.polyline([providerMarker.getLatLng(), userMarker.getLatLng()], {dashArray:'6,6'}).addTo(map);
+
+  // Calculate distance & time
+  const distance = providerMarker.getLatLng().distanceTo(userMarker.getLatLng()) / 1000; // km
+  const time = (distance / 40) * 60; // assuming 40 km/h
+  document.getElementById('routeInfo').innerHTML =
+    `🚗 Distance: ${distance.toFixed(2)} km | ⏱ Estimated Time: ${time.toFixed(0)} mins`;
+
+  // Fit bounds to show both markers
+  const group = new L.featureGroup([providerMarker, userMarker]);
+  map.fitBounds(group.getBounds().pad(0.5));
+}
+</script>
 
 </body>
 </html>
