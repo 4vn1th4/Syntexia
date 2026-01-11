@@ -7,14 +7,14 @@
 
 <!-- LEAFLET -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Inter", sans-serif;
+  font-family: Inter, sans-serif;
 }
 
 body {
@@ -53,7 +53,6 @@ body {
   margin-bottom: 18px;
   border-radius: 12px;
   border: none;
-  outline: none;
   background: rgba(255,255,255,0.08);
   color: #e5e7eb;
 }
@@ -71,10 +70,6 @@ body {
   color: #04110a;
   font-weight: 600;
   cursor: pointer;
-}
-
-#textBlack{
-  color: black;
 }
 
 #map {
@@ -99,31 +94,30 @@ body {
 
   <form id="providerForm">
 
-    <input type="file" id="foodImage" required>
+    <input type="file" required>
 
     <select id="foodType" required>
       <option value="">Select Food Type</option>
-      <div id="textBlack">
       <option>Vegetables</option>
       <option>Fruits</option>
       <option>Grains</option>
       <option>Dairy</option>
       <option>Prepared Meals</option>
-      </div> 
     </select>
 
     <input type="number" id="quantity" placeholder="Quantity (kg)" required>
 
-    <!-- UPDATED DATE FIELDS -->
-    Production Date<input type="date" id="productionDate" required>
-    Expiry Date<input type="date" id="expiryDate" required>
-    <input type="text" id="pickupWindow" placeholder="Pickup Window e.g. 2-4 PM" required>
+    Production Date
+    <input type="date" id="productionDate" required>
 
-    <!-- MAP -->
+    Expiry Date
+    <input type="date" id="expiryDate" required>
+
+    <input type="text" id="pickupWindow" placeholder="Pickup Window (e.g. 2–4 PM)" required>
+
     <p style="margin-bottom:8px;">📍 Click on map to select pickup location</p>
     <div id="map"></div>
 
-    <!-- Hidden lat/lng -->
     <input type="hidden" id="lat">
     <input type="hidden" id="lng">
 
@@ -136,66 +130,71 @@ body {
 </div>
 
 <script>
-/* MAP */
-let map = L.map('map').setView([25.2048, 55.2708], 10);
+document.addEventListener("DOMContentLoaded", function () {
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap'
-}).addTo(map);
+  const lat = document.getElementById("lat");
+  const lng = document.getElementById("lng");
+  const form = document.getElementById("providerForm");
+  const result = document.getElementById("aiResult");
 
-let marker;
+  /* MAP */
+  const map = L.map("map").setView([25.2048, 55.2708], 10);
 
-map.on('click', function(e) {
-  if (marker) map.removeLayer(marker);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap"
+  }).addTo(map);
 
-  marker = L.marker(e.latlng)
-    .addTo(map)
-    .bindPopup("Pickup Location")
-    .openPopup();
+  let marker;
 
-  lat.value = e.latlng.lat;
-  lng.value = e.latlng.lng;
-});
-
-/* FORM */
-const form = document.getElementById('providerForm');
-const result = document.getElementById('aiResult');
-
-form.addEventListener('submit', function(e){
-  e.preventDefault();
-
-  if (!lat.value || !lng.value) {
-    alert("Please select pickup location on the map");
-    return;
-  }
-
-  result.textContent = "Verifying with AI... ⏳";
-
-  setTimeout(() => {
-
-    const listing = {
-      foodType: foodType.value,
-      quantity: quantity.value,
-      productionDate: productionDate.value,
-      expiryDate: expiryDate.value,
-      pickupWindow: pickupWindow.value,
-      lat: lat.value,
-      lng: lng.value
-    };
-
-    let listings =
-      JSON.parse(localStorage.getItem("foodListings")) || [];
-
-    listings.push(listing);
-    localStorage.setItem("foodListings", JSON.stringify(listings));
-
-    result.textContent = "AI Verified: Listing saved ✅";
-    form.reset();
+  map.on("click", function (e) {
     if (marker) map.removeLayer(marker);
 
-  }, 2000);
+    marker = L.marker(e.latlng)
+      .addTo(map)
+      .bindPopup("Pickup Location")
+      .openPopup();
+
+    lat.value = e.latlng.lat;
+    lng.value = e.latlng.lng;
+  });
+
+  /* FORM SUBMIT */
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    if (!lat.value || !lng.value) {
+      alert("Please select pickup location on the map");
+      return;
+    }
+
+    result.textContent = "Verifying with AI... ⏳";
+
+    setTimeout(() => {
+      const listing = {
+        foodType: foodType.value,
+        quantity: quantity.value,
+        productionDate: productionDate.value,
+        expiryDate: expiryDate.value,
+        pickupWindow: pickupWindow.value,
+        lat: lat.value,
+        lng: lng.value
+      };
+
+      const listings =
+        JSON.parse(localStorage.getItem("foodListings")) || [];
+
+      listings.push(listing);
+      localStorage.setItem("foodListings", JSON.stringify(listings));
+
+      result.textContent = "AI Verified: Listing saved ✅";
+      form.reset();
+      if (marker) map.removeLayer(marker);
+    }, 2000);
+  });
+
 });
 </script>
 
 </body>
 </html>
+  
