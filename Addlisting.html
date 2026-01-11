@@ -2,11 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Provider Dashboard - NourishNet</title>
+<title>Provider Dashboard — FoodLink</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- LEAFLET -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -27,92 +26,6 @@ body {
   justify-content: center;
 }
 
-nav {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  max-width: 1200px;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(14px);
-  border-radius: 18px;
-  padding: 14px 28px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 1000;
-}
-
-/* From Uiverse.io by abdul12commando */
-/* === removing default button style ===*/
-.logo {
-  margin: 0;
-  height: auto;
-  background: transparent;
-  padding: 0;
-  border: none;
-}
-
-/* button styling */
-.logo {
-  --border-right: 6px;
-  --text-stroke-color: rgba(201, 187, 187, 0.6);
-  --animation-color: #22c55e;
-  --fs-size: 2em;
-  letter-spacing: 3px;
-  text-decoration: none;
-  font-size: var(--fs-size);
-  font-family: "Arial";
-  position: relative;
-  color: transparent;
-  -webkit-text-stroke: 1px var(--text-stroke-color);
-}
-/* this is the text, when you hover on button */
-.hover-text {
-  position: absolute;
-  box-sizing: border-box;
-  content: attr(data-text);
-  color: var(--animation-color);
-  width: 0%;
-  inset: 0;
-  border-right: var(--border-right) solid var(--animation-color);
-  overflow: hidden;
-  transition: 0.5s;
-  -webkit-text-stroke: 1px var(--animation-color);
-}
-/* hover */
-.logo:hover .hover-text {
-  width: 100%;
-  filter: drop-shadow(0 0 23px var(--animation-color))
-}
-
-
-nav ul {
-  list-style: none;
-  display: flex;
-  gap: 24px;
-}
-
-nav ul li {
-  cursor: pointer;
-  font-size: 14px;
-  opacity: 0.85;
-}
-
-nav ul li:hover {
-  opacity: 1;
-}
-
-.nav-btn {
-  padding: 8px 16px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.25);
-  background: transparent;
-  color: white;
-  cursor: pointer;
-}
-  
 .provider-card {
   background: rgba(255,255,255,0.06);
   backdrop-filter: blur(14px);
@@ -179,20 +92,7 @@ nav ul li:hover {
 </head>
 
 <body>
-<!-- NAVBAR -->
-<nav>
-  <!-- <div class="logo">NourishNet</div> -->
-  <button class="logo" data-text="Awesome">
-    <span class="actual-text">&nbsp;NourishNet&nbsp;</span>
-    <span aria-hidden="true" class="hover-text">&nbsp;NourishNet&nbsp;</span>
- </button>
-  <ul>
-    <button class="nav-btn" onclick="location.href='index.html'">Home</button>
-    <button class="nav-btn" onclick="location.href='provider.html'">Provider</button>
-    <button class="nav-btn" onclick="location.href='receiver.html'">Receiver</button>
-  </ul>
-  <button class="nav-btn" onclick="location.href='login.html'">Login</button> 
-</nav>
+
 <div class="provider-card">
   <h1>Provider Dashboard</h1>
   <p>List your food for AI verification</p>
@@ -236,51 +136,6 @@ nav ul li:hover {
 </div>
 
 <script>
-/* Photo DB */
-  // 1. Initialize Supabase
-const supabaseUrl = 'YOUR_SUPABASE_URL';
-const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-const form = document.getElementById('providerForm');
-const result = document.getElementById('aiResult');
-const foodImageInput = document.getElementById('foodImage');
-
-form.addEventListener('submit', async function(e) {
-  e.preventDefault();
-
-  const file = foodImageInput.files[0];
-  if (!file) {
-    alert("Please select a photo first!");
-    return;
-  }
-
-  result.textContent = "Uploading image to Cloud DB... ⏳";
-
-  // 2. Upload only the image
-  // We create a unique name so images don't overwrite each other
-  const fileName = `folder/${Date.now()}_${file.name}`;
-
-  const { data, error } = await supabase.storage
-    .from('food-photos') // Make sure you created this bucket in Supabase
-    .upload(fileName, file);
-
-  if (error) {
-    result.style.color = "red";
-    result.textContent = "Upload Error: " + error.message;
-    console.error(error);
-  } else {
-    result.style.color = "#22c55e";
-    result.textContent = "Image saved to Database successfully! ✅";
-    
-    // Optional: Get the link if you want to see it
-    const { data: urlData } = supabase.storage.from('food-photos').getPublicUrl(fileName);
-    console.log("Access your image here:", urlData.publicUrl);
-    
-    form.reset();
-  }
-});
-  
 /* MAP */
 let map = L.map('map').setView([25.2048, 55.2708], 10);
 
@@ -344,6 +199,3 @@ form.addEventListener('submit', function(e){
 
 </body>
 </html>
-
-
-
