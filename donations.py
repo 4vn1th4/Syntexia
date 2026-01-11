@@ -1,3 +1,5 @@
+#RECIVERR
+
 import sqlite3
 from flask import Flask, render_template, redirect, url_for
 
@@ -39,4 +41,5 @@ def take_listing(listing_id):
 # RUN SERVER
 # ------------------------------
 if __name__ == "__main__":
+
     app.run(debug=True)
